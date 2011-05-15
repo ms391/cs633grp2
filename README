@@ -1,0 +1,1 @@
+This is a simple JSP project that will scan a single web domain, store all links in a mysql database, and use lucene to search them.
