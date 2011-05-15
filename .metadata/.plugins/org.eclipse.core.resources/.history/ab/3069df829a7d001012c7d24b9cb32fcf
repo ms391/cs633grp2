@@ -1,0 +1,5 @@
+package org.bu.cs633.grp2.data;
+
+public class HibernateSingleton {
+
+}

@@ -1,0 +1,12 @@
+/**
+ * 
+ */
+package org.bu.cs633.grp2.data;
+
+/**
+ * @author matt
+ *
+ */
+public class CrawlEntity {
+
+}

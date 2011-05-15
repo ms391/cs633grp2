@@ -1,0 +1,16 @@
+package org.bu.cs633.grp2.crawl;
+
+public class Crawler {
+	private String startUrl = "http://www.cashmerefire.com";  // get this from a config somewhere ;-)
+	
+	public void StartScan()
+	{
+		ScanPage(startUrl);		
+	}
+	
+	protected void ScanPage(String url)
+	{
+		
+		
+	}
+}

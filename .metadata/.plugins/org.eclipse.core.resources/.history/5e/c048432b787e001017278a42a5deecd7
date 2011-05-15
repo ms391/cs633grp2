@@ -1,0 +1,50 @@
+package org.bu.cs633.grp2.crawl;
+
+import java.util.Calendar;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.bu.cs633.grp2.search.Searcher;
+
+public class CrawlScheduler implements ServletContextListener {
+	Timer timer = null;
+	
+	@Override
+	public void contextDestroyed(ServletContextEvent arg0) {
+		timer = null;
+	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent arg0) {
+		// setup timer to crawl every 24 hours (@ 11:00 PM)
+		timer = new Timer();
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		
+		timer.scheduleAtFixedRate(new RunCrawler(), cal.getTime(), (24*6060*1000));
+
+		// crawl at startup (wait 100 milliseconds and start)
+		new Timer().schedule(new RunCrawler(), 100);
+	}
+
+	private class RunCrawler extends TimerTask
+	{
+		@Override
+		public void run() {
+			Crawler crawler = new Crawler();
+			crawler.StartScan();
+			try {
+				Searcher.rebuildIndex();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+}

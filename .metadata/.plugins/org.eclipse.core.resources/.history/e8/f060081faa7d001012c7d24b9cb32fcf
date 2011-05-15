@@ -1,0 +1,70 @@
+package org.bu.cs633.grp2.crawl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+import org.htmlparser.parserapplications.StringExtractor;
+import org.htmlparser.util.ParserException;
+
+public class Crawler {
+	private String startUrl = "http://www.cashmerefire.com/gra/CFD_Aug_1957.jpg";  // get this from a config somewhere ;-)
+	private Pattern pattern = Pattern.compile("<[^>]*>");
+	private List<String> urlsScanned = new ArrayList<String>();
+		
+	public void StartScan()
+	{
+		ScanPage(startUrl);		
+	}
+	
+	protected void ScanPage(String url)
+	{
+		if (url.startsWith("/"))
+			url = startUrl + url;
+		
+		if (url.startsWith(startUrl) && NotAGraphic(url))
+		{
+			if (!urlsScanned.contains(url))
+			{
+				System.out.println("Scanning " + url);
+				
+				try {
+					List<String> links = new ArrayList<String>();
+					CrawlEntity entity = new CrawlEntity();
+					entity.setCrawldate(new Date());
+					entity.setUrl(url);
+					
+					StringExtractor extractor = new StringExtractor(url);
+					String contents = extractor.extractStrings(true);
+					entity.setRawContents(contents);
+					
+					Matcher m = pattern.matcher(contents);
+	
+					while (m.find())
+					{
+						String link = m.group();
+						link = link.substring(1, link.length() -1);
+						if (!urlsScanned.contains(link) && !links.contains(link))
+							links.add(link); // drop the <> at each end of the string
+					}
+	
+					String words = m.replaceAll(" ");
+					entity.setWords(words.replace("\r\n", " "));
+					
+					HibernateSingleton.updateCrawlEntity(entity);
+					urlsScanned.add(url);
+					
+					for(String link : links)
+						ScanPage(link);
+				} 
+				catch (ParserException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+}

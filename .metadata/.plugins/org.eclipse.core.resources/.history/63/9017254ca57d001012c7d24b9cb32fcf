@@ -1,0 +1,54 @@
+package org.bu.cs633.grp2.crawl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+import org.htmlparser.parserapplications.StringExtractor;
+import org.htmlparser.util.ParserException;
+
+public class Crawler {
+	private String startUrl = "http://www.cashmerefire.com";  // get this from a config somewhere ;-)
+	private Pattern pattern = Pattern.compile("<[^>]*>");
+	private List<String> urlsScanned = new ArrayList<String>();
+		
+	public void StartScan()
+	{
+		ScanPage(startUrl);		
+	}
+	
+	protected void ScanPage(String url)
+	{
+		try {
+			CrawlEntity entity = new CrawlEntity();
+			entity.setCrawldate(new Date());
+			entity.setUrl(url);
+			
+			StringExtractor extractor = new StringExtractor(url);
+			String contents = extractor.extractStrings(true);
+			entity.setRawContents(contents);
+			
+			Matcher m = pattern.matcher(contents);
+			entity.setWords(m.replaceAll(" "));
+			
+			HibernateSingleton.updateCrawlEntity(entity);
+			
+			List<String> links = new ArrayList<String>();
+			
+			while (m.find())
+				links.add(m.group());
+			
+			for(String link : links)
+				ScanPage(link);
+			
+			System.out.println(contents);
+		} 
+		catch (ParserException e) {
+			e.printStackTrace();
+		}
+	}
+}

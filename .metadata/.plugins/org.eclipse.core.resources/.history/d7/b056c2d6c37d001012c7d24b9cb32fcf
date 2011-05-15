@@ -1,0 +1,17 @@
+package org.bu.cs633.grp2.search;
+
+
+import org.junit.After;
+import org.junit.Before;
+
+public class TestSearcher {
+
+	@Before
+	public void setUp() throws Exception {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+	}
+
+}

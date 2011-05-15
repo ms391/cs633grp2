@@ -1,0 +1,61 @@
+package org.bu.cs633.grp2.data.test;
+
+import java.util.Date;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+
+public class TestHibernate {
+	private Transaction tr = null;
+	private Session session = null;
+	
+	protected void setUp()
+	{
+		session = HibernateSingleton.getSessionFactory().openSession();	
+	}
+	
+	protected void tearDown()
+	{
+		if (session != null)
+		{
+			session.flush();
+			session.close();
+		}
+	}
+	
+	public void testAddItem()
+	{
+		try
+		{
+			tr = session.beginTransaction();
+			
+			CrawlEntity entity = new CrawlEntity();
+			
+			entity.setUrl("http://www.cashmerefire.com/");
+			entity.setCrawldate(new Date());
+			entity.setRawContents("<html><body>foo bar baby</body></html>");
+			entity.setWords("foo bar baby");
+		}
+		catch (Exception e)
+		{
+			
+		}
+		finally
+		{
+			
+		}
+	}
+	
+	public void testQueryItem()
+	{
+		
+	}
+	
+	public void testRemoveItem()
+	{
+		
+	}
+}

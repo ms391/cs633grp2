@@ -1,0 +1,73 @@
+package org.bu.cs633.grp2.data;
+
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+public class HibernateSingleton {
+	private static final SessionFactory sessionFactory = buildSessionFactory();
+	
+	private static SessionFactory buildSessionFactory()
+	{
+		try
+		{
+			return new Configuration().configure().buildSessionFactory();
+		}
+		catch (Throwable ex)
+		{
+			System.err.println("Initial SessionFactory creation failed.");
+			ex.printStackTrace();
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
+	
+	public static SessionFactory getSessionFactory()
+	{
+		return sessionFactory;
+	}
+	
+	public static boolean updateCrawlEntity(CrawlEntity entity)
+	{
+		Session session = HibernateSingleton.getSessionFactory().openSession();
+		try
+		{
+			session.beginTransaction();
+			List<CrawlEntity> entities = session.createQuery("from CrawlEntity c where c.url = :url").setString("url", entity.getUrl()).list();
+			
+			if (entities.size() > 0)
+			{
+				for(CrawlEntity e : entities)
+				{
+					e.setCrawldate(entity.getCrawldate());
+					e.setRawContents(entity.getRawContents());
+					e.setWords(entity.getWords());
+					
+					session.update(e);
+				}
+			}
+			else
+			{
+				session.save(entity);
+			}
+			
+			session.getTransaction().commit();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return false;
+		}
+		finally
+		{
+			if (session != null)
+			{
+				session.flush();
+				session.close();
+			}
+		}
+		
+		return true;
+	}
+}

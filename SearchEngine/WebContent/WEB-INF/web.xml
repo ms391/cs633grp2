@@ -9,7 +9,7 @@
     <welcome-file>default.htm</welcome-file>
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
-  <listener>
-  	<listener-class>org.bu.cs633.grp2.crawl.CrawlScheduler</listener-class>
-  </listener>
+<!--   <listener> -->
+<!--   	<listener-class>org.bu.cs633.grp2.crawl.CrawlScheduler</listener-class> -->
+<!--   </listener> -->
 </web-app>

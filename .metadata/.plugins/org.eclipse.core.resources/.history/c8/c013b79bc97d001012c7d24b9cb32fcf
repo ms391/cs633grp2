@@ -1,0 +1,124 @@
+package org.bu.cs633.grp2.search;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.store.MMapDirectory;
+import org.apache.lucene.util.Version;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+
+public class Searcher {
+	private static Searcher instance = null;
+	
+	private Directory indexDirectory;
+	
+	protected Searcher() throws CorruptIndexException, LockObtainFailedException, IOException
+	{
+		List<CrawlEntity> entities = HibernateSingleton.getCrawlEntities();
+		indexDirectory = new MMapDirectory(createTempDir());
+		
+		IndexWriterConfig writeConfig = new IndexWriterConfig(Version.LUCENE_31, new StandardAnalyzer(Version.LUCENE_31));
+		
+		IndexWriter writer = null;
+		try
+		{
+			writer = new IndexWriter(indexDirectory, writeConfig);
+			
+			for(CrawlEntity entity : entities)
+			{
+				Document document = new Document();
+				document.add(new Field("text", entity.getWords(), Field.Store.YES, Field.Index.ANALYZED));
+				document.add(new Field("url", entity.getUrl(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+				
+				writer.addDocument(document);
+			}
+			
+			writer.optimize();
+		}
+		finally
+		{
+			if (writer != null)
+				writer.close();
+		}
+	}
+	
+	public Map<Integer, String> search(String searchCriteria) throws CorruptIndexException, IOException, ParseException
+	{
+		IndexSearcher searcher = null;
+		Map<Integer, String> map = new TreeMap<Integer, String>(Collections.reverseOrder());
+		
+		try
+		{
+			searcher = new IndexSearcher(indexDirectory);
+			QueryParser parser = new QueryParser(Version.LUCENE_31, "text", new StandardAnalyzer(Version.LUCENE_31));
+			Query query = parser.parse(searchCriteria);
+			TopDocs hits = searcher.search(query, 100);
+			
+			for(ScoreDoc score : hits.scoreDocs)
+			{
+				Document doc = searcher.doc(score.doc);
+				map.put(getPercentage(score.score), doc.getField("url").stringValue());
+			}
+			
+			return map;
+		}
+		finally
+		{
+			if (searcher != null);
+				searcher.close();
+		}
+	}
+	
+	public static synchronized Searcher getInstance() throws CorruptIndexException, LockObtainFailedException, IOException
+	{
+		if (instance == null)
+			instance = new Searcher();
+		
+		return instance;		
+	}
+	
+	protected static File createTempDir()
+	{
+		final String basePath = System.getProperty("java.io.tmpdir");
+		
+		Random rnd = new Random();
+		int random = 1 + rnd.nextInt();
+		
+		File tempDir = new File(basePath + File.separator + "searcher" + random + "_index");
+		
+		if (tempDir.exists() == false)
+			tempDir.mkdir();
+
+		tempDir.deleteOnExit();
+		
+		return tempDir;
+	}
+	
+	protected static int getPercentage(Float score)
+	{
+		float percentage = score * 100;
+		return (int) percentage;
+	}
+}

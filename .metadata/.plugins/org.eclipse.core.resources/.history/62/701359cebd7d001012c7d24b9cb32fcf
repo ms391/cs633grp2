@@ -1,0 +1,49 @@
+package org.bu.cs633.grp2.search;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+
+public class Searcher {
+	private static Searcher instance = null;
+	
+	private Analyzer analyzer;
+	private IndexWriter writer;
+	private IndexSearcher searcher;
+	private QueryParser parser;
+	
+	protected Searcher()
+	{
+		List<CrawlEntity> entities = HibernateSingleton.getCrawlEntities();
+		
+		for(CrawlEntity entity : entities)
+		{
+			Document document = new Document();
+			document.add(new Field("text", entity.getWords(), Field.Store.YES, Field.Index.ANALYZED));
+			document.add(new Field("url", entity.getUrl(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			
+		}
+		
+	}
+	
+	public static synchronized Searcher getInstance()
+	{
+		if (instance == null)
+			instance = new Searcher();
+		
+		return instance;		
+	}
+	
+	
+	
+}

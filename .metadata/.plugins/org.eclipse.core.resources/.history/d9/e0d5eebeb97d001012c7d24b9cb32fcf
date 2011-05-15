@@ -1,0 +1,39 @@
+package org.bu.cs633.grp2.search;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+
+import org.bu.cs633.grp2.data.CrawlEntity;
+import org.bu.cs633.grp2.data.HibernateSingleton;
+
+public class Searcher {
+	private static Searcher instance = null;
+	
+	protected Searcher()
+	{
+		List<CrawlEntity> entities = HibernateSingleton.getCrawlEntities();
+		List<Document> documents = new ArrayList<Document>();
+		
+		for(CrawlEntity entity : entities)
+		{
+			Document document = new Document();
+			
+
+		}
+		
+	}
+	
+	public static Searcher getInstance()
+	{
+		if (instance == null)
+			instance = new Searcher();
+		
+		return instance;		
+	}
+	
+	
+	
+}

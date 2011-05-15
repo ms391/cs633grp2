@@ -1,0 +1,81 @@
+package org.bu.cs633.grp2.data;
+
+import java.util.Date;
+import java.util.List;
+
+import junit.framework.TestCase;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+
+public class TestHibernate extends TestCase {
+	private Session session = null;
+	
+	protected void setUp()
+	{
+		session = HibernateSingleton.getSessionFactory().openSession();	
+	}
+	
+	protected void tearDown()
+	{
+		if (session != null)
+		{
+			session.flush();
+			session.close();
+		}
+	}
+	
+	public void testAddItem()
+	{
+		Transaction tr = null;
+		try
+		{
+			tr = session.beginTransaction();
+			
+			CrawlEntity entity = new CrawlEntity();
+				
+			entity.setUrl("http://www.cashmerefire.com/");
+			entity.setCrawldate(new Date());
+			entity.setRawContents("<html><body>foo bar baby</body></html>");
+			entity.setWords("foo bar baby");
+			
+			session.save(entity);
+			
+			session.getTransaction().commit();
+		}
+		catch(RuntimeException re)
+		{
+			if (tr != null)
+				tr.rollback();
+			
+			re.printStackTrace();
+		}
+	}
+	
+	public void testQueryItem()
+	{
+		Transaction tr = null;
+		
+		try
+		{
+			tr = session.beginTransaction();
+
+			List<CrawlEntity> pages = session.createQuery("from data d").list();
+		
+			for(CrawlEntity page : pages)
+			{
+				System.out.println(page.getId() + " - " + page.getUrl());
+			}
+			
+			tr.commit();
+		}
+		catch(RuntimeException re)
+		{
+			if (tr != null)
+				tr.rollback();
+			
+			re.printStackTrace();
+		}
+	}
+}

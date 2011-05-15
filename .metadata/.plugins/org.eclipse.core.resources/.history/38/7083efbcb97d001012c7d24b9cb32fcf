@@ -1,0 +1,18 @@
+package org.bu.cs633.grp2.search;
+
+public class Searcher {
+	private static Searcher instance = null;
+	
+	protected Searcher() {}
+	
+	public static Searcher getInstance()
+	{
+		if (instance == null)
+			instance = new Searcher();
+		
+		return instance;		
+	}
+	
+	
+	
+}

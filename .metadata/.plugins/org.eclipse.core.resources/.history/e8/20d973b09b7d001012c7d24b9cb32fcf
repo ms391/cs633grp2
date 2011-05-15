@@ -1,0 +1,30 @@
+package org.bu.cs633.grp2.data.test;
+
+
+public class TestHibernate {
+	
+	protected void setUp()
+	{
+	
+	}
+	
+	protected void tearDown()
+	{
+		
+	}
+	
+	public void testAddItem()
+	{
+		
+	}
+	
+	public void testQueryItem()
+	{
+		
+	}
+	
+	public void testRemoveItem()
+	{
+		
+	}
+}
